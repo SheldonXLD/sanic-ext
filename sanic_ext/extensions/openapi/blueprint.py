@@ -1,10 +1,11 @@
 import inspect
+from pathlib import Path
 from functools import partial
 from os.path import abspath, dirname, realpath
 
 from sanic.blueprints import Blueprint
 from sanic.config import Config
-from sanic.response import html, json
+from sanic.response import html, json, file
 
 from sanic_ext.extensions.openapi.builders import (
     OperationStore,
@@ -54,6 +55,11 @@ def blueprint_factory(config: Config):
         @bp.get(config.OAS_URI_TO_CONFIG)
         def openapi_config(request):
             return json(request.app.config.SWAGGER_UI_CONFIGURATION)
+
+        @bp.get("/static/<resource:str>")
+        def get_swagger_resource(request, resource):
+            resource_path = Path(dir_path) / resource
+            return file(resource_path)
 
     @bp.before_server_start
     def build_spec(app, loop):
